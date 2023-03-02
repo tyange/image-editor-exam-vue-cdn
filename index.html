@@ -29,8 +29,13 @@
         </div>
         <div class="canvas__wrapper">
           <canvas ref="originImageLayer" width="850" height="500"></canvas>
-          <canvas width="850" height="500"></canvas>
-          <canvas width="850" height="500"></canvas>
+          <canvas ref="blurredImageLayer" width="850" height="500"></canvas>
+          <canvas
+            ref="dragLayer"
+            v-on:mousedown="onMouseDown"
+            width="850"
+            height="500"
+          ></canvas>
         </div>
       </main>
     </div>
@@ -41,6 +46,9 @@
       data() {
         return {
           imageSource: "",
+          isDragging: false,
+          startX: 0,
+          startY: 0,
         };
       },
       methods: {
@@ -51,8 +59,18 @@
 
           this.imageSource = URL.createObjectURL(file);
         },
+        onMouseDown(e) {
+          this.startX = e.offsetX;
+          this.startY = e.offsetY;
+        },
       },
       watch: {
+        startX() {
+          console.log(this.startX);
+        },
+        startY() {
+          console.log(this.startY);
+        },
         imageSource() {
           const canvas = this.$refs.originImageLayer;
           const context = canvas.getContext("2d");
