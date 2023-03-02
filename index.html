@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <title>IMAGE EDITOR</title>
   </head>
   <body>
@@ -19,23 +19,52 @@
           <button>redo</button>
           <button>download</button>
         </div>
+        <div class="canvas__input">
+          <label for="file__input">Select File</label>
+          <input
+            id="file__input"
+            type="file"
+            v-on:change="onChangeFileInput($event)"
+          />
+        </div>
         <div class="canvas__wrapper">
-          <canvas width="850" height="500"></canvas>
+          <canvas ref="originImageLayer" width="850" height="500"></canvas>
           <canvas width="850" height="500"></canvas>
           <canvas width="850" height="500"></canvas>
         </div>
       </main>
     </div>
-    <script>
-      new Vue({
-        el: "#app",
-        data() {
-          return {
-            message: "Hello World",
+  </body>
+  <script>
+    new Vue({
+      el: "#app",
+      data() {
+        return {
+          imageSource: "",
+        };
+      },
+      methods: {
+        onChangeFileInput(e) {
+          const file = e.target.files[0];
+
+          if (!file) return;
+
+          this.imageSource = URL.createObjectURL(file);
+        },
+      },
+      watch: {
+        imageSource() {
+          const canvas = this.$refs.originImageLayer;
+          const context = canvas.getContext("2d");
+
+          const image = new Image();
+          image.src = this.imageSource;
+
+          image.onload = () => {
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
           };
         },
-        methods: {},
-      });
-    </script>
-  </body>
+      },
+    });
+  </script>
 </html>
