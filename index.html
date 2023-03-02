@@ -5,11 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
-    <title>Vite App</title>
+    <link rel="stylesheet" href="/style.css" />
+    <title>IMAGE EDITOR</title>
   </head>
   <body>
     <div id="app">
-      <p>{{message}}</p>
+      <header>
+        <div>IMAGE EDITOR</div>
+      </header>
+      <main>
+        <div class="canvas__controller">
+          <button>undo</button>
+          <button>redo</button>
+          <button>download</button>
+        </div>
+        <div class="canvas__wrapper">
+          <canvas width="850" height="500"></canvas>
+          <canvas width="850" height="500"></canvas>
+          <canvas width="850" height="500"></canvas>
+        </div>
+      </main>
     </div>
     <script>
       new Vue({
@@ -19,6 +34,7 @@
             message: "Hello World",
           };
         },
+        methods: {},
       });
     </script>
   </body>
