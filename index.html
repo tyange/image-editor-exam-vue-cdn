@@ -49,10 +49,7 @@
         return {
           imageSource: "",
           isDragging: false,
-          startX: 0,
-          startY: 0,
-          width: 0,
-          height: 0,
+          blurryArea: { startX: 0, startY: 0, width: 0, height: 0 },
           blurryAreas: [],
         };
       },
@@ -65,55 +62,78 @@
           this.imageSource = URL.createObjectURL(file);
         },
         onMouseDown(e) {
-          this.startX = e.offsetX;
-          this.startY = e.offsetY;
+          this.isDragging = true;
+          this.blurryArea.startX = e.offsetX;
+          this.blurryArea.startY = e.offsetY;
         },
         onMouseMove(e) {
-          this.width = e.offsetX - this.startX;
-          this.height = e.offsetY - this.startY;
+          if (!this.isDragging) return;
+
+          this.blurryArea.width = e.offsetX - this.blurryArea.startX;
+          this.blurryArea.height = e.offsetY - this.blurryArea.startY;
         },
         onMouseUp(e) {
           const canvas = this.$refs.blurredImageLayer;
           const context = canvas.getContext("2d");
 
-          if (this.width !== 0 && this.height !== 0) {
+          if (this.blurryArea.width !== 0 && this.blurryArea.height !== 0) {
+            console.log(this.blurryArea);
+
             this.blurryAreas = [
               ...this.blurryAreas,
               {
-                x: this.startX,
-                y: this.startY,
-                width: this.width,
-                height: this.height,
+                ...this.blurryArea,
                 blurryImage: context.getImageData(
-                  this.startX,
-                  this.startY,
-                  this.width,
-                  this.height
+                  this.blurryArea.startX,
+                  this.blurryArea.startY,
+                  this.blurryArea.width,
+                  this.blurryArea.height
                 ),
               },
             ];
           }
+
+          this.isDragging = false;
         },
       },
       watch: {
-        startX() {
-          console.log(this.startX);
-        },
-        startY() {
-          console.log(this.startY);
+        blurryArea: {
+          deep: true,
+          handler(v, oldV) {
+            console.log(v);
+          },
         },
         blurryAreas() {
           console.log(this.blurryAreas);
         },
         imageSource() {
-          const canvas = this.$refs.originImageLayer;
-          const context = canvas.getContext("2d");
+          const originCanvas = this.$refs.originImageLayer;
+          const originCanvasContext = originCanvas.getContext("2d");
+
+          const blurredCanvas = this.$refs.blurredImageLayer;
+          const blurredCanvasContext = blurredCanvas.getContext("2d");
 
           const image = new Image();
           image.src = this.imageSource;
 
           image.onload = () => {
-            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            originCanvasContext.drawImage(
+              image,
+              0,
+              0,
+              originCanvas.width,
+              originCanvas.height
+            );
+
+            blurredCanvasContext.filter("blur(3px)");
+            blurredCanvasContext.drawImage(
+              image,
+              0,
+              0,
+              blurredCanvas.width,
+              blurredCanvas.height
+            );
+            blurredCanvasContext.restore();
           };
         },
       },
