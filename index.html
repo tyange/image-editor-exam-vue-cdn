@@ -28,7 +28,12 @@
           />
         </div>
         <div class="canvas__wrapper">
-          <canvas ref="originImageLayer" width="850" height="500"></canvas>
+          <canvas
+            ref="originImageLayer"
+            width="850"
+            height="500"
+            style="z-index: 5"
+          ></canvas>
           <canvas ref="blurredImageLayer" width="850" height="500"></canvas>
           <canvas
             ref="dragLayer"
@@ -37,6 +42,7 @@
             v-on:mouseup="onMouseUp"
             width="850"
             height="500"
+            style="z-index: 10"
           ></canvas>
         </div>
       </main>
@@ -77,8 +83,6 @@
           const context = canvas.getContext("2d");
 
           if (this.blurryArea.width !== 0 && this.blurryArea.height !== 0) {
-            console.log(this.blurryArea);
-
             this.blurryAreas = [
               ...this.blurryAreas,
               {
@@ -100,11 +104,42 @@
         blurryArea: {
           deep: true,
           handler(v, oldV) {
-            console.log(v);
+            const canvas = this.$refs.dragLayer;
+            const context = canvas.getContext("2d");
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = "rgba(255,255,255,0.2)";
+
+            context.fillRect(v.startX, v.startY, v.width, v.height);
           },
         },
         blurryAreas() {
-          console.log(this.blurryAreas);
+          const originCanvas = this.$refs.originImageLayer;
+          const context = originCanvas.getContext("2d");
+          const image = new Image();
+          image.src = this.imageSource;
+
+          image.onload = () => {
+            context.drawImage(
+              image,
+              0,
+              0,
+              originCanvas.width,
+              originCanvas.height
+            );
+
+            this.blurryAreas
+              .filter(({ blurryImage }) => blurryImage !== undefined)
+              .forEach(({ blurryImage, ...area }) => {
+                const left =
+                  area.width > 0 ? area.startX : area.startX + area.width;
+                const top =
+                  area.height > 0 ? area.startY : area.startY + area.height;
+                context.putImageData(blurryImage, left, top);
+              });
+
+            context.restore();
+          };
         },
         imageSource() {
           const originCanvas = this.$refs.originImageLayer;
@@ -125,7 +160,7 @@
               originCanvas.height
             );
 
-            blurredCanvasContext.filter("blur(3px)");
+            blurredCanvasContext.filter = "blur(3px)";
             blurredCanvasContext.drawImage(
               image,
               0,
