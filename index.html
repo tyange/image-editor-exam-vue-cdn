@@ -15,7 +15,7 @@
       </header>
       <main>
         <div class="canvas__controller">
-          <button>undo</button>
+          <button v-on:click="undo">undo</button>
           <button>redo</button>
           <button>download</button>
         </div>
@@ -79,15 +79,26 @@
           this.blurryArea.height = e.offsetY - this.blurryArea.startY;
         },
         onMouseUp(e) {
-          const canvas = this.$refs.blurredImageLayer;
-          const context = canvas.getContext("2d");
+          const dragLayerCanvas = this.$refs.dragLayer;
+          const dragLayerCanvasContext = dragLayerCanvas.getContext("2d");
+
+          dragLayerCanvasContext.clearRect(
+            0,
+            0,
+            dragLayerCanvas.width,
+            dragLayerCanvas.height
+          );
+
+          const blurredImageLayerCanvas = this.$refs.blurredImageLayer;
+          const blurredImageLayerCanvasContext =
+            blurredImageLayerCanvas.getContext("2d");
 
           if (this.blurryArea.width !== 0 && this.blurryArea.height !== 0) {
             this.blurryAreas = [
               ...this.blurryAreas,
               {
                 ...this.blurryArea,
-                blurryImage: context.getImageData(
+                blurryImage: blurredImageLayerCanvasContext.getImageData(
                   this.blurryArea.startX,
                   this.blurryArea.startY,
                   this.blurryArea.width,
@@ -98,6 +109,13 @@
           }
 
           this.isDragging = false;
+        },
+        undo(e) {
+          e.preventDefault();
+
+          if (this.blurryAreas.length <= 0) return;
+
+          this.blurryAreas.splice(this.blurryAreas.length - 1, 1);
         },
       },
       watch: {
